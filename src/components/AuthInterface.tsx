@@ -1,17 +1,14 @@
 import React, { useState } from "react";
 import { useTrends } from "../context/TrendsContext";
-import { ArrowLeft, Mail, Lock, User, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Mail, Lock, Loader2, Sparkles } from "lucide-react";
 
 export default function AuthInterface() {
   const { login, signUp, socialLogin, setActiveTab } = useTrends();
   const [isSignUp, setIsSignUp] = useState<boolean>(true);
   const [email, setEmail] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const [selectedTier, setSelectedTier] = useState<"free" | "pro" | "enterprise">(() => {
-    return (localStorage.getItem("selected_signup_tier") || "free") as "free" | "pro" | "enterprise";
-  });
+  const selectedTier = (localStorage.getItem("selected_signup_tier") || "free") as "free" | "pro" | "enterprise";
   
   // Social login connecting animation state
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
@@ -25,11 +22,6 @@ export default function AuthInterface() {
       return;
     }
 
-    if (isSignUp && !username) {
-      setError("Please enter a username.");
-      return;
-    }
-
     try {
       if (email.trim().toLowerCase() === "iwanderful@gmail.com") {
         // Special admin access!
@@ -38,7 +30,7 @@ export default function AuthInterface() {
       }
 
       if (isSignUp) {
-        const directDashboard = signUp(email, username, password, selectedTier);
+        const directDashboard = signUp(email, email, password, selectedTier);
         if (directDashboard) {
           localStorage.removeItem("selected_signup_tier");
         }
@@ -114,22 +106,6 @@ export default function AuthInterface() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {isSignUp && (
-                <div className="space-y-1">
-                  <label className="text-xs text-neutral-400 font-medium">Username</label>
-                  <div className="relative">
-                    <User className="absolute left-3.5 top-3 w-4 h-4 text-neutral-600" />
-                    <input
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                      placeholder="e.g. faith_creator"
-                      className="w-full bg-neutral-900 border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-violet-500/50 transition duration-200"
-                    />
-                  </div>
-                </div>
-              )}
-
               <div className="space-y-1">
                 <label className="text-xs text-neutral-400 font-medium">Email Address</label>
                 <div className="relative">
@@ -157,25 +133,6 @@ export default function AuthInterface() {
                   />
                 </div>
               </div>
-
-              {isSignUp && (
-                <div className="space-y-1">
-                  <label className="text-xs text-neutral-400 font-medium">Deployment Tier</label>
-                  <select
-                    value={selectedTier}
-                    onChange={(e) => {
-                      const tier = e.target.value as "free" | "pro" | "enterprise";
-                      setSelectedTier(tier);
-                      localStorage.setItem("selected_signup_tier", tier);
-                    }}
-                    className="w-full bg-neutral-900 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/50 transition duration-200 cursor-pointer"
-                  >
-                    <option value="free">Free Observer ($0/mo - Demo limits)</option>
-                    <option value="pro">Pro Minister ($29/mo - 10 daily ideas)</option>
-                    <option value="enterprise">Kingdom Suite ($99/mo - 25 daily ideas)</option>
-                  </select>
-                </div>
-              )}
 
               {email.trim().toLowerCase() === "iwanderful@gmail.com" && (
                 <div className="flex items-center space-x-2 text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-xl text-xs">
