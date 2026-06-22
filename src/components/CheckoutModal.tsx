@@ -37,10 +37,21 @@ export default function CheckoutModal() {
     setSdkReady(false);
     setPaypalError(null);
     
-    const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID || "test";
+    const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID || "BAAEEHI1XbuD23YS7U4jMI8twK6ImLgmXEUixOsnZdBeJ8YgnDzrB-8lVz2n8Zmb8gTJ2is4I686Z8GaJk";
     const scriptId = "paypal-sdk-script";
+    const scriptSrc = `https://www.paypal.com/sdk/js?client-id=${clientId}&vault=true&intent=subscription`;
     
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+    
+    // If the script already exists but with a different source (e.g. without subscription params),
+    // remove it so we can load the subscription SDK clean.
+    if (script && script.src !== scriptSrc) {
+      script.remove();
+      if (window.paypal) {
+        delete window.paypal;
+      }
+      script = null;
+    }
     
     // Helper to render buttons
     const renderPaypalButtons = () => {
@@ -54,31 +65,27 @@ export default function CheckoutModal() {
           layout: "vertical",
           color: "gold",
           shape: "rect",
-          label: "paypal"
+          label: "subscribe"
         },
-        createOrder: (_data: any, actions: any) => {
-          return actions.order.create({
-            purchase_units: [{
-              description: `Christian Viral Trends - ${getTierName()} Subscription`,
-              amount: {
-                currency_code: "USD",
-                value: getTierPrice()
-              }
-            }]
+        createSubscription: (_data: any, actions: any) => {
+          const planId = checkoutSelectedTier === "enterprise"
+            ? (import.meta.env.VITE_PAYPAL_ENTERPRISE_PLAN_ID || "P-ENTERPRISE-PLACEHOLDER")
+            : (import.meta.env.VITE_PAYPAL_PRO_PLAN_ID || "P-0R172655R1958001TNI4UU7Y");
+          return actions.subscription.create({
+            plan_id: planId
           });
         },
-        onApprove: async (_data: any, actions: any) => {
+        onApprove: async (data: any, _actions: any) => {
           setPaypalError(null);
           try {
-            const details = await actions.order.capture();
-            await completePaypalPayment(details);
+            await completePaypalPayment(data);
           } catch (err: any) {
-            setPaypalError(err.message || "Failed to capture PayPal transaction.");
+            setPaypalError(err.message || "Failed to finalize subscription.");
           }
         },
         onError: (err: any) => {
           console.error("PayPal SDK error:", err);
-          setPaypalError("An error occurred with PayPal checkout. Please try again.");
+          setPaypalError("An error occurred with PayPal subscription. Please try again.");
         }
       }).render(paypalContainerRef.current).catch((err: any) => {
         console.error("PayPal render error:", err);
@@ -98,7 +105,7 @@ export default function CheckoutModal() {
     } else {
       script = document.createElement("script");
       script.id = scriptId;
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD`;
+      script.src = scriptSrc;
       script.async = true;
       script.addEventListener("load", renderPaypalButtons);
       document.body.appendChild(script);
