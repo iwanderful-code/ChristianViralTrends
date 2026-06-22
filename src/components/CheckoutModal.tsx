@@ -69,7 +69,7 @@ export default function CheckoutModal() {
         },
         createSubscription: (_data: any, actions: any) => {
           const planId = checkoutSelectedTier === "enterprise"
-            ? (import.meta.env.VITE_PAYPAL_ENTERPRISE_PLAN_ID || "P-ENTERPRISE-PLACEHOLDER")
+            ? (import.meta.env.VITE_PAYPAL_ENTERPRISE_PLAN_ID || "P-95R13263FL1048301NI4UZSQ")
             : (import.meta.env.VITE_PAYPAL_PRO_PLAN_ID || "P-0R172655R1958001TNI4UU7Y");
           return actions.subscription.create({
             plan_id: planId
