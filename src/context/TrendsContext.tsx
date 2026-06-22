@@ -239,24 +239,11 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const socialLogin = (platform: string) => {
     const randomUser = `FaithShare_${platform}`;
     const socialEmail = `${randomUser.toLowerCase()}@faith.net`;
-    const selectedTier = (localStorage.getItem("selected_signup_tier") || "free") as "free" | "pro" | "enterprise";
+    const rawTier = localStorage.getItem("selected_signup_tier");
+    const isSpecificPaidTier = rawTier === "pro" || rawTier === "enterprise";
     
-    if (selectedTier === "free") {
-      // Register directly if not exists
-      const existing = users.find(u => u.email.toLowerCase() === socialEmail);
-      if (!existing) {
-        const newUser = {
-          email: socialEmail,
-          username: randomUser,
-          password: "",
-          tier: "free",
-          isAdmin: false
-        };
-        setUsers(prev => [...prev, newUser]);
-      }
-      login(socialEmail, "", "free");
-      localStorage.removeItem("selected_signup_tier");
-    } else {
+    if (isSpecificPaidTier) {
+      const selectedTier = rawTier as "pro" | "enterprise";
       // Cache for checkout
       setCheckoutSelectedTier(selectedTier);
       localStorage.setItem("temp_signup_data", JSON.stringify({ 
@@ -266,6 +253,29 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         tier: selectedTier 
       }));
       setIsCheckoutOpen(true);
+    } else {
+      // No specific paid tier was pre-selected; default to "pro" instead of "free" (Free Observer)
+      const existing = users.find(u => u.email.toLowerCase() === socialEmail);
+      if (!existing) {
+        const newUser = {
+          email: socialEmail,
+          username: randomUser,
+          password: "",
+          tier: "pro",
+          isAdmin: false
+        };
+        setUsers(prev => [...prev, newUser]);
+      }
+      
+      const targetTier = existing ? (existing.tier === "free" ? "pro" : existing.tier) : "pro";
+      
+      // If the user already exists with the "free" tier, upgrade them to "pro"
+      if (existing && existing.tier === "free") {
+        setUsers(prev => prev.map(u => u.email.toLowerCase() === socialEmail ? { ...u, tier: "pro" } : u));
+      }
+      
+      login(socialEmail, "", targetTier);
+      localStorage.removeItem("selected_signup_tier");
     }
   };
 
