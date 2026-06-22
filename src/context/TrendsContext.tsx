@@ -36,6 +36,7 @@ interface TrendsContextProps {
   openCheckout: (tier: "pro" | "enterprise") => void;
   closeCheckout: () => void;
   processPayment: () => Promise<void>;
+  completePaypalPayment: (details: any) => Promise<void>;
   toggleWatchlist: (trend: TrendItem) => void;
   incrementGenerationCount: () => boolean;
   saveIdea: (idea: ViralIdea) => void;
@@ -333,6 +334,62 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     await new Promise((resolve) => setTimeout(resolve, 2200));
     setCheckoutStatus("success");
     await new Promise((resolve) => setTimeout(resolve, 800));
+    
+    const temp = localStorage.getItem("temp_signup_data");
+    if (temp) {
+      const { email, username, password } = JSON.parse(temp);
+      const newUser = {
+        email: email.trim().toLowerCase(),
+        username,
+        password: password || "",
+        tier: checkoutSelectedTier,
+        isAdmin: false
+      };
+      setUsers(prev => {
+        const filtered = prev.filter(u => u.email.toLowerCase() !== email.trim().toLowerCase());
+        return [...filtered, newUser];
+      });
+      login(email, password, checkoutSelectedTier);
+      localStorage.removeItem("temp_signup_data");
+    } else if (user) {
+      // Upgrading existing user
+      const updatedUsers = users.map(u => {
+        if (u.email.toLowerCase() === user.email?.toLowerCase()) {
+          return { ...u, tier: checkoutSelectedTier };
+        }
+        return u;
+      });
+      setUsers(updatedUsers);
+      setUser({
+        ...user,
+        tier: checkoutSelectedTier
+      });
+    } else {
+      // Guest upgrading
+      const guestEmail = "guest_believer@faith.net";
+      const newUser = {
+        email: guestEmail,
+        username: "Kingdom Guest",
+        password: "",
+        tier: checkoutSelectedTier,
+        isAdmin: false
+      };
+      setUsers(prev => {
+        const filtered = prev.filter(u => u.email.toLowerCase() !== guestEmail);
+        return [...filtered, newUser];
+      });
+      login(guestEmail, "", checkoutSelectedTier);
+    }
+    
+    resetPreviewTimer();
+    setIsCheckoutOpen(false);
+    setCheckoutStatus("idle");
+  };
+
+  const completePaypalPayment = async (details: any) => {
+    console.log("PayPal payment completed:", details);
+    setCheckoutStatus("success");
+    await new Promise((resolve) => setTimeout(resolve, 1500));
     
     const temp = localStorage.getItem("temp_signup_data");
     if (temp) {
@@ -705,6 +762,7 @@ Ensure the JSON is strictly valid, and return nothing else (no markdown wrappers
         openCheckout,
         closeCheckout,
         processPayment,
+        completePaypalPayment,
         toggleWatchlist,
         incrementGenerationCount,
         saveIdea,
