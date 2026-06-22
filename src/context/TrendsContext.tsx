@@ -205,7 +205,7 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (forceTier) {
         const session: UserSession = {
           email: cleanEmail,
-          username: cleanEmail.split("@")[0],
+          username: cleanEmail,
           tier: forceTier,
           isAdmin: false,
           dailyGenerationsCount: 0,
@@ -249,7 +249,7 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       setCheckoutSelectedTier(selectedTier);
       localStorage.setItem("temp_signup_data", JSON.stringify({ 
         email: socialEmail, 
-        username: randomUser, 
+        username: socialEmail,
         password: "", 
         tier: selectedTier 
       }));
@@ -260,7 +260,7 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (!existing) {
         const newUser = {
           email: socialEmail,
-          username: randomUser,
+          username: socialEmail,
           password: "",
           tier: "free",
           isAdmin: false
