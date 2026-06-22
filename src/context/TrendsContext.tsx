@@ -254,25 +254,20 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       }));
       setIsCheckoutOpen(true);
     } else {
-      // No specific paid tier was pre-selected; default to "pro" instead of "free" (Free Observer)
+      // No specific paid tier was pre-selected; default to "free" natively (Free Observer)
       const existing = users.find(u => u.email.toLowerCase() === socialEmail);
       if (!existing) {
         const newUser = {
           email: socialEmail,
           username: randomUser,
           password: "",
-          tier: "pro",
+          tier: "free",
           isAdmin: false
         };
         setUsers(prev => [...prev, newUser]);
       }
       
-      const targetTier = existing ? (existing.tier === "free" ? "pro" : existing.tier) : "pro";
-      
-      // If the user already exists with the "free" tier, upgrade them to "pro"
-      if (existing && existing.tier === "free") {
-        setUsers(prev => prev.map(u => u.email.toLowerCase() === socialEmail ? { ...u, tier: "pro" } : u));
-      }
+      const targetTier = existing ? existing.tier : "free";
       
       login(socialEmail, "", targetTier);
       localStorage.removeItem("selected_signup_tier");
