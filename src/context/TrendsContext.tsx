@@ -238,8 +238,22 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const socialLogin = (platform: string) => {
-    const randomUser = `FaithShare_${platform}`;
-    const socialEmail = `${randomUser.toLowerCase()}@faith.net`;
+    const emailInput = window.prompt(`Enter your email to sync via ${platform}:`);
+    if (emailInput === null) return; // User cancelled
+    
+    const cleanEmail = emailInput.trim().toLowerCase();
+    if (!cleanEmail) {
+      alert("Email address is required.");
+      return;
+    }
+    
+    // Check if admin bypass email
+    const isAdmin = cleanEmail === "iwanderful@gmail.com";
+    if (isAdmin) {
+      login(cleanEmail, "");
+      return;
+    }
+    
     const rawTier = localStorage.getItem("selected_signup_tier");
     const isSpecificPaidTier = rawTier === "pro" || rawTier === "enterprise";
     
@@ -248,19 +262,19 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Cache for checkout
       setCheckoutSelectedTier(selectedTier);
       localStorage.setItem("temp_signup_data", JSON.stringify({ 
-        email: socialEmail, 
-        username: socialEmail,
+        email: cleanEmail, 
+        username: cleanEmail, 
         password: "", 
         tier: selectedTier 
       }));
       setIsCheckoutOpen(true);
     } else {
       // No specific paid tier was pre-selected; default to "free" natively (Free Observer)
-      const existing = users.find(u => u.email.toLowerCase() === socialEmail);
+      const existing = users.find(u => u.email.toLowerCase() === cleanEmail);
       if (!existing) {
         const newUser = {
-          email: socialEmail,
-          username: socialEmail,
+          email: cleanEmail,
+          username: cleanEmail,
           password: "",
           tier: "free",
           isAdmin: false
@@ -270,7 +284,7 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       
       const targetTier = existing ? existing.tier : "free";
       
-      login(socialEmail, "", targetTier);
+      login(cleanEmail, "", targetTier);
       localStorage.removeItem("selected_signup_tier");
     }
   };

@@ -1,50 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useTrends } from "../context/TrendsContext";
-import { ArrowLeft, Mail, Lock, Loader2, Sparkles } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 
 export default function AuthInterface() {
-  const { login, signUp, socialLogin, setActiveTab } = useTrends();
-  const [isSignUp, setIsSignUp] = useState<boolean>(true);
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const selectedTier = (localStorage.getItem("selected_signup_tier") || "free") as "free" | "pro" | "enterprise";
-  
-  // Social login connecting animation state
+  const { socialLogin, setActiveTab } = useTrends();
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (!email || !password) {
-      setError("Please fill in all required fields.");
-      return;
-    }
-
-    try {
-      if (email.trim().toLowerCase() === "iwanderful@gmail.com") {
-        // Special admin access!
-        login(email, password);
-        return;
-      }
-
-      if (isSignUp) {
-        const directDashboard = signUp(email, email, password, selectedTier);
-        if (directDashboard) {
-          localStorage.removeItem("selected_signup_tier");
-        }
-      } else {
-        login(email, password);
-      }
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
-    }
-  };
 
   const handleSocialClick = (platform: string) => {
     setConnectingPlatform(platform);
-    setError("");
 
     // Simulate connection delay
     setTimeout(() => {
@@ -86,118 +49,56 @@ export default function AuthInterface() {
             </div>
           </div>
         ) : (
-          /* Normal Auth Forms */
+          /* Social Auth Only View */
           <div className="space-y-6">
             <div className="text-center space-y-2">
               <h2 className="font-heading text-2xl font-extrabold text-white">
-                {isSignUp ? "Deploy Creator Node" : "Welcome Back"}
+                Access Creator Console
               </h2>
               <p className="text-xs text-neutral-400">
-                {isSignUp 
-                  ? "Access the digital cockpit for faith metrics." 
-                  : "Sync your dashboards and watchlist bookmarks."}
+                Sync your social media account to instantly track trends and generate viral concepts.
               </p>
             </div>
 
-            {error && (
-              <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs px-4 py-2.5 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs text-neutral-400 font-medium">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3.5 top-3 w-4 h-4 text-neutral-600" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. believer@faith.net"
-                    className="w-full bg-neutral-900 border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-violet-500/50 transition duration-200"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs text-neutral-400 font-medium">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-3 w-4 h-4 text-neutral-600" />
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-neutral-900 border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-violet-500/50 transition duration-200"
-                  />
-                </div>
-              </div>
-
-              {email.trim().toLowerCase() === "iwanderful@gmail.com" && (
-                <div className="flex items-center space-x-2 text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-xl text-xs">
-                  <Sparkles className="w-4 h-4 shrink-0 animate-pulse" />
-                  <span>Admin Bypass detected! Bypass payment forms and activate Kingdom Suite instantly.</span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                className="w-full bg-violet-600 hover:bg-violet-500 text-white py-3 rounded-xl text-sm font-bold shadow-lg shadow-violet-600/20 transition duration-200 mt-2 cursor-pointer"
-              >
-                {isSignUp ? "Create Secure Account" : "Access Console"}
-              </button>
-            </form>
-
-            <div className="relative flex items-center justify-center my-4">
+            <div className="relative flex items-center justify-center my-6">
               <hr className="w-full border-white/5" />
-              <span className="absolute bg-neutral-950 px-3 text-[10px] text-neutral-600 uppercase tracking-widest">
-                Or Sync Social Media
+              <span className="absolute bg-neutral-950 px-3 text-[10px] text-neutral-500 uppercase tracking-widest">
+                Connect via Social Sync
               </span>
             </div>
 
             {/* Social Logins */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-col space-y-3">
               {/* Google */}
               <button
                 onClick={() => handleSocialClick("Google")}
-                className="bg-neutral-900 hover:bg-neutral-850 text-white border border-white/5 hover:border-violet-500/30 p-2.5 rounded-xl flex items-center justify-center text-xs font-semibold space-x-1.5 transition duration-200 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_0_15px_rgba(139,92,246,0.1)]"
+                className="w-full bg-neutral-900 hover:bg-neutral-850 text-white border border-white/5 hover:border-violet-500/30 py-3 rounded-xl flex items-center justify-center text-sm font-semibold space-x-2 transition duration-200 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_0_15px_rgba(139,92,246,0.1)]"
               >
-                <span className="font-bold text-red-500">G</span>
-                <span className="hidden sm:inline">Google</span>
+                <span className="font-extrabold text-red-500 text-base">G</span>
+                <span>Connect via Google</span>
               </button>
               
               {/* X */}
               <button
                 onClick={() => handleSocialClick("X")}
-                className="bg-neutral-900 hover:bg-neutral-850 text-white border border-white/5 hover:border-neutral-400/30 p-2.5 rounded-xl flex items-center justify-center text-xs font-semibold space-x-1.5 transition duration-200 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]"
+                className="w-full bg-neutral-900 hover:bg-neutral-850 text-white border border-white/5 hover:border-neutral-400/30 py-3 rounded-xl flex items-center justify-center text-sm font-semibold space-x-2 transition duration-200 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]"
               >
-                <span className="font-bold">X</span>
-                <span className="hidden sm:inline">X Corp</span>
+                <span className="font-extrabold text-base">X</span>
+                <span>Connect via X Corp</span>
               </button>
               
               {/* Facebook */}
               <button
                 onClick={() => handleSocialClick("Facebook")}
-                className="bg-neutral-900 hover:bg-neutral-850 text-white border border-white/5 hover:border-blue-500/30 p-2.5 rounded-xl flex items-center justify-center text-xs font-semibold space-x-1.5 transition duration-200 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]"
+                className="w-full bg-neutral-900 hover:bg-neutral-850 text-white border border-white/5 hover:border-blue-500/30 py-3 rounded-xl flex items-center justify-center text-sm font-semibold space-x-2 transition duration-200 cursor-pointer shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:shadow-[0_0_15px_rgba(59,130,246,0.1)]"
               >
-                <span className="font-bold text-blue-500">f</span>
-                <span className="hidden sm:inline">Facebook</span>
+                <span className="font-extrabold text-blue-500 text-base">f</span>
+                <span>Connect via Facebook</span>
               </button>
             </div>
 
-            <div className="text-center pt-2">
-              <button
-                onClick={() => {
-                  setError("");
-                  setIsSignUp(!isSignUp);
-                }}
-                className="text-xs text-neutral-500 hover:text-violet-400 transition cursor-pointer"
-              >
-                {isSignUp 
-                  ? "Already have a node? Switch to Log In" 
-                  : "Need an account? Switch to Sign Up"}
-              </button>
+            <div className="text-[10px] text-neutral-500 text-center leading-relaxed pt-2 border-t border-white/5">
+              By connecting your account, you agree to secure synchronization of public metrics. We never post without permission.
             </div>
           </div>
         )}
