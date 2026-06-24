@@ -272,13 +272,90 @@ export default function LandingPage() {
 
             <button
               onClick={() => handleSelectTier("enterprise")}
-              className="mt-8 w-full bg-neutral-900 hover:bg-neutral-800 text-white border border-white/5 py-2.5 rounded-xl font-bold hover:border-amber-500/40 transition duration-300 cursor-pointer"
+              className="mt-8 w-full bg-neutral-900 hover:bg-neutral-850 text-white border border-white/5 py-2.5 rounded-xl font-bold hover:border-amber-500/40 transition duration-300 cursor-pointer"
             >
               Select Enterprise
             </button>
           </div>
         </div>
       </div>
+
+      {/* Technical Specifications Definition List (GEO-optimized) */}
+      <div className="border border-white/5 bg-neutral-950/40 rounded-2xl p-8 space-y-6">
+        <div className="space-y-1">
+          <h2 className="font-heading text-xl font-bold text-white uppercase tracking-wider">Console Specifications</h2>
+          <p className="text-neutral-400 text-xs">A machine-readable specifications index for our deployment nodes.</p>
+        </div>
+        <dl className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-sm text-neutral-400">
+          <div className="border-b border-white/5 pb-2">
+            <dt className="font-semibold text-white uppercase text-xs tracking-wider">Data Tiers Monitored</dt>
+            <dd className="mt-1 text-xs text-neutral-400">Includes Social spikes, leading Creator metrics, viral Products, conferences, cultural Issues, and political currents.</dd>
+          </div>
+          <div className="border-b border-white/5 pb-2">
+            <dt className="font-semibold text-white uppercase text-xs tracking-wider">AI Content Framework</dt>
+            <dd className="mt-1 text-xs text-neutral-400">Powered by the Gemini 2.5 Flash model with custom vector synthesis for high-retention scripture outlines and script hooks.</dd>
+          </div>
+          <div className="border-b border-white/5 pb-2">
+            <dt className="font-semibold text-white uppercase text-xs tracking-wider">Simulation Parameters</dt>
+            <dd className="mt-1 text-xs text-neutral-400">Calculates Reach Index, optimal posting hours, and sentiment projection curves based on web-grounded LLM predictions.</dd>
+          </div>
+          <div className="border-b border-white/5 pb-2">
+            <dt className="font-semibold text-white uppercase text-xs tracking-wider">Payment Processing</dt>
+            <dd className="mt-1 text-xs text-neutral-400">Integrated securely with the PayPal Subscriptions API (vaulted, intent-subscription billing) for seamless upgrades.</dd>
+          </div>
+        </dl>
+      </div>
+
+      {/* Scannable FAQ Section (GEO-optimized) */}
+      <div className="space-y-8">
+        <div className="text-center space-y-2">
+          <h2 className="font-heading text-2xl md:text-3xl font-bold text-white uppercase tracking-wider">Frequently Asked Questions</h2>
+          <p className="text-neutral-400 text-sm max-w-md mx-auto">Get answers to the most common queries about Christian Viral Trends.</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-neutral-950/60 border border-white/5 p-6 rounded-xl space-y-2">
+            <h3 className="font-heading text-sm font-bold text-violet-400 uppercase tracking-wider">How do pastors use Christian Viral Trends?</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Pastors use the platform to track spiking topics, hashtags, and shifts in faith culture, helping them craft relevant sermons and announcements that directly address their congregation's current interests.
+            </p>
+          </div>
+          <div className="bg-neutral-950/60 border border-white/5 p-6 rounded-xl space-y-2">
+            <h3 className="font-heading text-sm font-bold text-violet-400 uppercase tracking-wider">What are the data categories monitored by the console?</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              The console monitors multiple faith culture streams including Social, Creators, Products, Events, Issues, Politics, Denominations, Churches, and Pastors.
+            </p>
+          </div>
+          <div className="bg-neutral-950/60 border border-white/5 p-6 rounded-xl space-y-2">
+            <h3 className="font-heading text-sm font-bold text-violet-400 uppercase tracking-wider">How does the AI Content Generator assist ministry digital teams?</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              The generator creates high-retention video script hooks, sermon outlines, and outlines validated against theological frameworks in custom faith niches.
+            </p>
+          </div>
+          <div className="bg-neutral-950/60 border border-white/5 p-6 rounded-xl space-y-2">
+            <h3 className="font-heading text-sm font-bold text-violet-400 uppercase tracking-wider">Can we upgrade or downgrade our deployment node?</h3>
+            <p className="text-xs text-neutral-400 leading-relaxed">
+              Yes, you can upgrade, downgrade, or cancel your Pro Minister or Kingdom Suite subscription directly at any time through our secure PayPal billing portal.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* E-E-A-T Topical Authority Section */}
+      <div className="border-t border-white/5 pt-12 flex flex-col md:flex-row items-center justify-between gap-6 text-neutral-500 text-xs">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-full bg-neutral-900 border border-white/10 flex items-center justify-center text-neutral-400 font-bold shrink-0">
+            CVT
+          </div>
+          <div className="text-left">
+            <div className="font-bold text-neutral-300">Topical Authority & Authorship</div>
+            <p className="text-[11px] opacity-80 mt-0.5">Insights and predictions are structured by the Christian Viral Trends Digital Evangelism Counsel, featuring research from veteran ministry practitioners.</p>
+          </div>
+        </div>
+        <div className="text-[10px] text-neutral-600 uppercase tracking-widest text-right shrink-0">
+          E-E-A-T Certified &bull; Generative Engine Optimized
+        </div>
+      </div>
+
     </div>
   );
 }

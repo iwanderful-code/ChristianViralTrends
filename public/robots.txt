@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /checkout
+Disallow: /settings
+Disallow: /dashboard
+
+# Specific instructions for AI agents (GEO)
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+Sitemap: https://christianviraltrends.com/sitemap.xml
