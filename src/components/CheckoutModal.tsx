@@ -137,7 +137,10 @@ export default function CheckoutModal() {
       
       const btnScript = document.createElement("script");
       btnScript.src = scriptSrc;
-      btnScript.setAttribute("data-payment_button_id", "pl_T6bzopOMydl5Lb");
+      const buttonId = checkoutSelectedTier === "enterprise"
+        ? (import.meta.env.VITE_RAZORPAY_ENTERPRISE_BUTTON_ID || "pl_T6bzopOMydl5Lb") // Fallback until provided
+        : (import.meta.env.VITE_RAZORPAY_PRO_BUTTON_ID || "pl_T6bzopOMydl5Lb");
+      btnScript.setAttribute("data-payment_button_id", buttonId);
       btnScript.async = true;
       
       btnScript.addEventListener("load", () => {
