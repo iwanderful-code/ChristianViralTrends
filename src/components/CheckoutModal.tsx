@@ -44,7 +44,7 @@ export default function CheckoutModal() {
     
     const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID || "BAAEEHI1XbuD23YS7U4jMI8twK6ImLgmXEUixOsnZdBeJ8YgnDzrB-8lVz2n8Zmb8gTJ2is4I686Z8GaJk";
     const scriptId = "paypal-sdk-script";
-    const scriptSrc = `https://www.paypal.com/sdk/js?client-id=${clientId}&vault=true&intent=subscription`;
+    const scriptSrc = `https://www.paypal.com/sdk/js?client-id=${clientId}&vault=true&intent=subscription&disable-funding=card,credit`;
     
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
     
