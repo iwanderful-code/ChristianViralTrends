@@ -23,6 +23,7 @@ export default function CheckoutModal() {
   const [paypalError, setPaypalError] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"paypal" | "razorpay">("paypal");
   const [razorpayReady, setRazorpayReady] = useState<boolean>(false);
+  const [razorpayError, setRazorpayError] = useState<string | null>(null);
   
   const paypalContainerRef = useRef<HTMLDivElement>(null);
   const razorpayContainerRef = useRef<HTMLDivElement>(null);
@@ -122,11 +123,15 @@ export default function CheckoutModal() {
     if (!isCheckoutOpen || paymentMethod !== "razorpay") return;
 
     setRazorpayReady(false);
+    setRazorpayError(null);
     
     const scriptSrc = "https://cdn.razorpay.com/static/widget/subscription-button.js";
     const scriptId = "razorpay-sdk-script";
     
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+    if (script) {
+      script.remove();
+    }
     
     const initializeRazorpayButton = () => {
       if (!razorpayContainerRef.current) return;
@@ -150,6 +155,10 @@ export default function CheckoutModal() {
         setRazorpayReady(true);
       });
       
+      btnScript.addEventListener("error", () => {
+        setRazorpayError("Failed to load Razorpay subscription widget. Please verify your internet connection or disable ad-blockers.");
+      });
+      
       form.appendChild(btnScript);
       razorpayContainerRef.current.appendChild(form);
       
@@ -161,23 +170,19 @@ export default function CheckoutModal() {
       };
     };
 
-    // If script is already in the document, we can initialize straight away
-    // Wait a tiny tick to ensure ref is mounted
-    if (script) {
-      const timer = setTimeout(initializeRazorpayButton, 100);
-      return () => clearTimeout(timer);
-    } else {
-      script = document.createElement("script");
-      script.id = scriptId;
-      script.src = scriptSrc;
-      script.async = true;
-      script.addEventListener("load", initializeRazorpayButton);
-      document.body.appendChild(script);
-    }
+    script = document.createElement("script");
+    script.id = scriptId;
+    script.src = scriptSrc;
+    script.async = true;
+    script.addEventListener("load", initializeRazorpayButton);
+    script.addEventListener("error", () => {
+      setRazorpayError("Failed to load Razorpay gateway script. Please verify your connection.");
+    });
+    document.body.appendChild(script);
     
     return () => {
       if (script) {
-        script.removeEventListener("load", initializeRazorpayButton);
+        script.remove();
       }
     };
   }, [isCheckoutOpen, paymentMethod, checkoutSelectedTier]);
@@ -283,10 +288,16 @@ export default function CheckoutModal() {
                       <div ref={razorpayContainerRef} className="w-full flex justify-center razorpay-btn-wrapper"></div>
                     </div>
                     
-                    {!razorpayReady && (
+                    {!razorpayReady && !razorpayError && (
                       <div className="py-12 flex flex-col items-center justify-center space-y-3">
                         <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
                         <p className="text-neutral-400 text-xs">Initializing secure Razorpay gateway...</p>
+                      </div>
+                    )}
+                    
+                    {razorpayError && (
+                      <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs px-3.5 py-2.5 rounded-lg text-center">
+                        {razorpayError}
                       </div>
                     )}
                     
