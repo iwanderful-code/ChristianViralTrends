@@ -123,7 +123,7 @@ export default function CheckoutModal() {
 
     setRazorpayReady(false);
     
-    const scriptSrc = "https://checkout.razorpay.com/v1/payment-button.js";
+    const scriptSrc = "https://cdn.razorpay.com/static/widget/subscription-button.js";
     const scriptId = "razorpay-sdk-script";
     
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
@@ -137,10 +137,13 @@ export default function CheckoutModal() {
       
       const btnScript = document.createElement("script");
       btnScript.src = scriptSrc;
+      
       const buttonId = checkoutSelectedTier === "enterprise"
-        ? (import.meta.env.VITE_RAZORPAY_ENTERPRISE_BUTTON_ID || "pl_T6bzopOMydl5Lb") // Fallback until provided
-        : (import.meta.env.VITE_RAZORPAY_PRO_BUTTON_ID || "pl_T6bzopOMydl5Lb");
-      btnScript.setAttribute("data-payment_button_id", buttonId);
+        ? (import.meta.env.VITE_RAZORPAY_ENTERPRISE_BUTTON_ID || "pl_T6cF9Fsuzjdiea")
+        : (import.meta.env.VITE_RAZORPAY_PRO_BUTTON_ID || "pl_T6cI7Vz6ZWCHTo");
+        
+      btnScript.setAttribute("data-subscription_button_id", buttonId);
+      btnScript.setAttribute("data-button_theme", "brand-color");
       btnScript.async = true;
       
       btnScript.addEventListener("load", () => {
@@ -153,11 +156,13 @@ export default function CheckoutModal() {
       // Intercept Razorpay's programmatic form submission to handle SPA upgrade
       form.submit = () => {
         const paymentId = (form.querySelector('input[name="razorpay_payment_id"]') as HTMLInputElement)?.value || "rzp_test_mocked_id";
-        console.log("Razorpay payment form submitted. Payment ID:", paymentId);
+        console.log("Razorpay subscription form submitted. Payment ID:", paymentId);
         completeRazorpayPayment({ razorpay_payment_id: paymentId });
       };
     };
 
+    // If script is already in the document, we can initialize straight away
+    // Wait a tiny tick to ensure ref is mounted
     if (script) {
       const timer = setTimeout(initializeRazorpayButton, 100);
       return () => clearTimeout(timer);
