@@ -37,6 +37,7 @@ interface TrendsContextProps {
   closeCheckout: () => void;
   processPayment: () => Promise<void>;
   completePaypalPayment: (details: any) => Promise<void>;
+  completeRazorpayPayment: (details: any) => Promise<void>;
   toggleWatchlist: (trend: TrendItem) => void;
   incrementGenerationCount: () => boolean;
   saveIdea: (idea: ViralIdea) => void;
@@ -46,6 +47,15 @@ interface TrendsContextProps {
   startPreviewTimer: () => void;
   pausePreviewTimer: () => void;
   resetPreviewTimer: () => void;
+
+  // Share Modal
+  isShareOpen: boolean;
+  shareType: "idea" | "campaign" | null;
+  shareIdeaData: ViralIdea | null;
+  shareCampaignData: { prediction: CampaignPrediction; input: CampaignInput } | null;
+  openShareIdea: (idea: ViralIdea) => void;
+  openShareCampaign: (prediction: CampaignPrediction, input: CampaignInput) => void;
+  closeShare: () => void;
 }
 
 const TrendsContext = createContext<TrendsContextProps | undefined>(undefined);
@@ -110,6 +120,12 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isCheckoutOpen, setIsCheckoutOpen] = useState<boolean>(false);
   const [checkoutSelectedTier, setCheckoutSelectedTier] = useState<"pro" | "enterprise">("pro");
   const [checkoutStatus, setCheckoutStatus] = useState<"idle" | "authorizing" | "success">("idle");
+
+  // Share modal state
+  const [isShareOpen, setIsShareOpen] = useState<boolean>(false);
+  const [shareType, setShareType] = useState<"idea" | "campaign" | null>(null);
+  const [shareIdeaData, setShareIdeaData] = useState<ViralIdea | null>(null);
+  const [shareCampaignData, setShareCampaignData] = useState<{ prediction: CampaignPrediction; input: CampaignInput } | null>(null);
 
   // Sync to localStorage
   useEffect(() => {
@@ -343,6 +359,25 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setCheckoutStatus("idle");
   };
 
+  const openShareIdea = (idea: ViralIdea) => {
+    setShareIdeaData(idea);
+    setShareType("idea");
+    setIsShareOpen(true);
+  };
+
+  const openShareCampaign = (prediction: CampaignPrediction, input: CampaignInput) => {
+    setShareCampaignData({ prediction, input });
+    setShareType("campaign");
+    setIsShareOpen(true);
+  };
+
+  const closeShare = () => {
+    setIsShareOpen(false);
+    setShareType(null);
+    setShareIdeaData(null);
+    setShareCampaignData(null);
+  };
+
   const processPayment = async () => {
     setCheckoutStatus("authorizing");
     await new Promise((resolve) => setTimeout(resolve, 2200));
@@ -402,6 +437,62 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const completePaypalPayment = async (details: any) => {
     console.log("PayPal payment completed:", details);
+    setCheckoutStatus("success");
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    const temp = localStorage.getItem("temp_signup_data");
+    if (temp) {
+      const { email, username, password } = JSON.parse(temp);
+      const newUser = {
+        email: email.trim().toLowerCase(),
+        username,
+        password: password || "",
+        tier: checkoutSelectedTier,
+        isAdmin: false
+      };
+      setUsers(prev => {
+        const filtered = prev.filter(u => u.email.toLowerCase() !== email.trim().toLowerCase());
+        return [...filtered, newUser];
+      });
+      login(email, password, checkoutSelectedTier);
+      localStorage.removeItem("temp_signup_data");
+    } else if (user) {
+      // Upgrading existing user
+      const updatedUsers = users.map(u => {
+        if (u.email.toLowerCase() === user.email?.toLowerCase()) {
+          return { ...u, tier: checkoutSelectedTier };
+        }
+        return u;
+      });
+      setUsers(updatedUsers);
+      setUser({
+        ...user,
+        tier: checkoutSelectedTier
+      });
+    } else {
+      // Guest upgrading
+      const guestEmail = "guest_believer@faith.net";
+      const newUser = {
+        email: guestEmail,
+        username: "Kingdom Guest",
+        password: "",
+        tier: checkoutSelectedTier,
+        isAdmin: false
+      };
+      setUsers(prev => {
+        const filtered = prev.filter(u => u.email.toLowerCase() !== guestEmail);
+        return [...filtered, newUser];
+      });
+      login(guestEmail, "", checkoutSelectedTier);
+    }
+    
+    resetPreviewTimer();
+    setIsCheckoutOpen(false);
+    setCheckoutStatus("idle");
+  };
+
+  const completeRazorpayPayment = async (details: any) => {
+    console.log("Razorpay payment completed:", details);
     setCheckoutStatus("success");
     await new Promise((resolve) => setTimeout(resolve, 1500));
     
@@ -777,6 +868,7 @@ Ensure the JSON is strictly valid, and return nothing else (no markdown wrappers
         closeCheckout,
         processPayment,
         completePaypalPayment,
+        completeRazorpayPayment,
         toggleWatchlist,
         incrementGenerationCount,
         saveIdea,
@@ -785,7 +877,16 @@ Ensure the JSON is strictly valid, and return nothing else (no markdown wrappers
         generateViralIdeas,
         startPreviewTimer,
         pausePreviewTimer,
-        resetPreviewTimer
+        resetPreviewTimer,
+
+        // Share modal
+        isShareOpen,
+        shareType,
+        shareIdeaData,
+        shareCampaignData,
+        openShareIdea,
+        openShareCampaign,
+        closeShare
       }}
     >
       {children}

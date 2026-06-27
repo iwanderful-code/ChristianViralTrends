@@ -8,6 +8,7 @@ import ViralGenerator from "./components/ViralGenerator";
 import CampaignSimulator from "./components/CampaignSimulator";
 import CheckoutModal from "./components/CheckoutModal";
 import SettingsModal from "./components/SettingsModal";
+import ShareModal from "./components/ShareModal";
 
 function AppContent() {
   const { activeTab, dashboardView } = useTrends();
@@ -54,6 +55,7 @@ function AppContent() {
       {/* Checkout Modals */}
       <CheckoutModal />
       <SettingsModal />
+      <ShareModal />
     </div>
   );
 }

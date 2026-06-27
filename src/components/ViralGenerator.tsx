@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTrends } from "../context/TrendsContext";
 import { FAITH_NICHES } from "../utils/mockData";
 import { ViralIdea } from "../types";
-import { Sparkles, Loader2, Copy, Bookmark, BookmarkCheck, Heart, Trash2, Check } from "lucide-react";
+import { Sparkles, Loader2, Copy, Bookmark, BookmarkCheck, Heart, Trash2, Check, Share2 } from "lucide-react";
 
 export default function ViralGenerator() {
   const { 
@@ -14,7 +14,8 @@ export default function ViralGenerator() {
     savedIdeas, 
     removeSavedIdea,
     openCheckout,
-    generateViralIdeas
+    generateViralIdeas,
+    openShareIdea
   } = useTrends();
 
   const [selectedNiche, setSelectedNiche] = useState<string>(FAITH_NICHES[0]);
@@ -336,6 +337,14 @@ ${idea.scriptOutline.map((step, idx) => `${idx + 1}. ${step}`).join("\n")}
                       </button>
 
                       <button
+                        onClick={() => openShareIdea(idea)}
+                        className="px-2.5 py-1.5 rounded-lg border border-white/5 bg-neutral-900 hover:border-violet-500/20 text-neutral-400 hover:text-white hover:bg-neutral-850 cursor-pointer transition flex items-center justify-center"
+                        title="Share / Download Card"
+                      >
+                        <Share2 className="w-3.5 h-3.5" />
+                      </button>
+
+                      <button
                         onClick={() => saveIdea(idea)}
                         disabled={alreadySaved}
                         className={`px-2.5 py-1.5 rounded-lg border text-[10px] font-bold flex items-center justify-center transition cursor-pointer ${
@@ -399,6 +408,14 @@ ${idea.scriptOutline.map((step, idx) => `${idx + 1}. ${step}`).join("\n")}
                           <span>Copy details</span>
                         </>
                       )}
+                    </button>
+
+                    <button
+                      onClick={() => openShareIdea(saved.idea)}
+                      className="px-2.5 py-1.5 rounded-lg border border-white/5 bg-neutral-900 hover:border-violet-500/20 text-neutral-400 hover:text-white hover:bg-neutral-850 cursor-pointer transition flex items-center justify-center"
+                      title="Share / Download Card"
+                    >
+                      <Share2 className="w-3.5 h-3.5" />
                     </button>
 
                     <button

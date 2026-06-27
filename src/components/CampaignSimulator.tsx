@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useTrends } from "../context/TrendsContext";
 import { FAITH_NICHES } from "../utils/mockData";
 import { CampaignInput, CampaignPrediction } from "../types";
-import { Lock, Loader2, Play, Sliders } from "lucide-react";
+import { Lock, Loader2, Play, Sliders, Share2 } from "lucide-react";
 
 export const TONE_OPTIONS = [
   "Inspirational/Uplifting",
@@ -13,7 +13,7 @@ export const TONE_OPTIONS = [
 ];
 
 export default function CampaignSimulator() {
-  const { user, runCampaignSimulation, openCheckout } = useTrends();
+  const { user, runCampaignSimulation, openCheckout, openShareCampaign } = useTrends();
   
   const [selectedNiche, setSelectedNiche] = useState<string>(FAITH_NICHES[0]);
   const [audience, setAudience] = useState<string>("Gen-Z Seekers");
@@ -235,6 +235,23 @@ export default function CampaignSimulator() {
                     </ul>
                   </div>
                 </div>
+
+                <button
+                  onClick={() => {
+                    const input: CampaignInput = {
+                      niche: selectedNiche,
+                      audience,
+                      tone,
+                      hashtag,
+                      category: "social"
+                    };
+                    openShareCampaign(results, input);
+                  }}
+                  className="w-full bg-violet-600 hover:bg-violet-500 text-white border border-white/5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 transition cursor-pointer"
+                >
+                  <Share2 className="w-4 h-4 text-violet-300" />
+                  <span>Share Campaign Projection</span>
+                </button>
               </div>
             ) : (
               <div className="text-center py-12 text-xs text-neutral-600">

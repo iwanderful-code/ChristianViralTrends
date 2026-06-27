@@ -15,13 +15,17 @@ export default function CheckoutModal() {
     checkoutSelectedTier, 
     checkoutStatus, 
     processPayment,
-    completePaypalPayment 
+    completePaypalPayment,
+    completeRazorpayPayment
   } = useTrends();
   
   const [sdkReady, setSdkReady] = useState<boolean>(false);
   const [paypalError, setPaypalError] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"paypal" | "razorpay">("paypal");
+  const [razorpayReady, setRazorpayReady] = useState<boolean>(false);
   
   const paypalContainerRef = useRef<HTMLDivElement>(null);
+  const razorpayContainerRef = useRef<HTMLDivElement>(null);
 
   const getTierPrice = () => {
     return checkoutSelectedTier === "enterprise" ? "99.00" : "29.00";
@@ -31,8 +35,9 @@ export default function CheckoutModal() {
     return checkoutSelectedTier === "enterprise" ? "Kingdom Suite" : "Pro Minister";
   };
 
+  // PayPal SDK Loader Effect
   useEffect(() => {
-    if (!isCheckoutOpen) return;
+    if (!isCheckoutOpen || paymentMethod !== "paypal") return;
     
     setSdkReady(false);
     setPaypalError(null);
@@ -43,8 +48,6 @@ export default function CheckoutModal() {
     
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
     
-    // If the script already exists but with a different source (e.g. without subscription params),
-    // remove it so we can load the subscription SDK clean.
     if (script && script.src !== scriptSrc) {
       script.remove();
       if (window.paypal) {
@@ -53,11 +56,8 @@ export default function CheckoutModal() {
       script = null;
     }
     
-    // Helper to render buttons
     const renderPaypalButtons = () => {
       if (!window.paypal || !paypalContainerRef.current) return;
-      
-      // Clear container first to avoid duplicate buttons
       paypalContainerRef.current.innerHTML = "";
       
       window.paypal.Buttons({
@@ -96,7 +96,6 @@ export default function CheckoutModal() {
 
     if (script) {
       if (window.paypal) {
-        // Wait a tiny tick to ensure container ref is mounted
         const timer = setTimeout(renderPaypalButtons, 100);
         return () => clearTimeout(timer);
       } else {
@@ -116,7 +115,64 @@ export default function CheckoutModal() {
         script.removeEventListener("load", renderPaypalButtons);
       }
     };
-  }, [isCheckoutOpen, checkoutSelectedTier]);
+  }, [isCheckoutOpen, checkoutSelectedTier, paymentMethod]);
+
+  // Razorpay SDK Button Loader Effect
+  useEffect(() => {
+    if (!isCheckoutOpen || paymentMethod !== "razorpay") return;
+
+    setRazorpayReady(false);
+    
+    const scriptSrc = "https://checkout.razorpay.com/v1/payment-button.js";
+    const scriptId = "razorpay-sdk-script";
+    
+    let script = document.getElementById(scriptId) as HTMLScriptElement | null;
+    
+    const initializeRazorpayButton = () => {
+      if (!razorpayContainerRef.current) return;
+      razorpayContainerRef.current.innerHTML = "";
+      
+      const form = document.createElement("form");
+      form.id = "razorpay-form";
+      
+      const btnScript = document.createElement("script");
+      btnScript.src = scriptSrc;
+      btnScript.setAttribute("data-payment_button_id", "pl_T6bzopOMydl5Lb");
+      btnScript.async = true;
+      
+      btnScript.addEventListener("load", () => {
+        setRazorpayReady(true);
+      });
+      
+      form.appendChild(btnScript);
+      razorpayContainerRef.current.appendChild(form);
+      
+      // Intercept Razorpay's programmatic form submission to handle SPA upgrade
+      form.submit = () => {
+        const paymentId = (form.querySelector('input[name="razorpay_payment_id"]') as HTMLInputElement)?.value || "rzp_test_mocked_id";
+        console.log("Razorpay payment form submitted. Payment ID:", paymentId);
+        completeRazorpayPayment({ razorpay_payment_id: paymentId });
+      };
+    };
+
+    if (script) {
+      const timer = setTimeout(initializeRazorpayButton, 100);
+      return () => clearTimeout(timer);
+    } else {
+      script = document.createElement("script");
+      script.id = scriptId;
+      script.src = scriptSrc;
+      script.async = true;
+      script.addEventListener("load", initializeRazorpayButton);
+      document.body.appendChild(script);
+    }
+    
+    return () => {
+      if (script) {
+        script.removeEventListener("load", initializeRazorpayButton);
+      }
+    };
+  }, [isCheckoutOpen, paymentMethod, checkoutSelectedTier]);
 
   if (!isCheckoutOpen) return null;
 
@@ -161,29 +217,77 @@ export default function CheckoutModal() {
                 </div>
               </div>
  
-              {/* PayPal Smart Payment Buttons Container */}
+              {/* Payment Method Selector */}
+              <div className="grid grid-cols-2 gap-3 pb-2">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("paypal")}
+                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
+                    paymentMethod === "paypal"
+                      ? "bg-amber-500/10 border-amber-500 text-amber-400 shadow-md shadow-amber-500/5"
+                      : "bg-neutral-900 border-white/5 text-neutral-400 hover:text-white"
+                  }`}
+                >
+                  <span>PayPal</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("razorpay")}
+                  className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
+                    paymentMethod === "razorpay"
+                      ? "bg-violet-600/10 border-violet-500 text-violet-400 shadow-md shadow-violet-500/5"
+                      : "bg-neutral-900 border-white/5 text-neutral-400 hover:text-white"
+                  }`}
+                >
+                  <span>Razorpay</span>
+                </button>
+              </div>
+
+              {/* Gateway Containers */}
               <div className="space-y-4">
-                <div className={`relative min-h-[150px] z-10 ${sdkReady ? "" : "hidden"}`}>
-                  <div ref={paypalContainerRef} className="w-full"></div>
-                </div>
-                
-                {!sdkReady && (
-                  <div className="py-12 flex flex-col items-center justify-center space-y-3">
-                    <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
-                    <p className="text-neutral-400 text-xs">Initializing secure PayPal gateway...</p>
-                  </div>
+                {paymentMethod === "paypal" ? (
+                  <>
+                    <div className={`relative min-h-[150px] z-10 ${sdkReady ? "" : "hidden"}`}>
+                      <div ref={paypalContainerRef} className="w-full"></div>
+                    </div>
+                    
+                    {!sdkReady && (
+                      <div className="py-12 flex flex-col items-center justify-center space-y-3">
+                        <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
+                        <p className="text-neutral-400 text-xs">Initializing secure PayPal gateway...</p>
+                      </div>
+                    )}
+                    
+                    {paypalError && (
+                      <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs px-3.5 py-2.5 rounded-lg text-center">
+                        {paypalError}
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center space-x-2 text-[10px] text-neutral-500 pt-2 border-t border-white/5">
+                      <ShieldCheck className="w-4 h-4 text-violet-400 shrink-0" />
+                      <span>256-bit SSL encrypted connection. Powered by PayPal.</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className={`relative min-h-[100px] z-10 flex justify-center items-center ${razorpayReady ? "" : "hidden"}`}>
+                      <div ref={razorpayContainerRef} className="w-full flex justify-center razorpay-btn-wrapper"></div>
+                    </div>
+                    
+                    {!razorpayReady && (
+                      <div className="py-12 flex flex-col items-center justify-center space-y-3">
+                        <Loader2 className="w-8 h-8 text-violet-500 animate-spin" />
+                        <p className="text-neutral-400 text-xs">Initializing secure Razorpay gateway...</p>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center space-x-2 text-[10px] text-neutral-500 pt-2 border-t border-white/5">
+                      <ShieldCheck className="w-4 h-4 text-violet-400 shrink-0" />
+                      <span>256-bit SSL encrypted connection. Powered by Razorpay.</span>
+                    </div>
+                  </>
                 )}
-                
-                {paypalError && (
-                  <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs px-3.5 py-2.5 rounded-lg text-center">
-                    {paypalError}
-                  </div>
-                )}
-                
-                <div className="flex items-center space-x-2 text-[10px] text-neutral-500 pt-2 border-t border-white/5">
-                  <ShieldCheck className="w-4 h-4 text-violet-400 shrink-0" />
-                  <span>256-bit SSL encrypted connection. Powered by PayPal.</span>
-                </div>
               </div>
 
               {/* Demo Quick Checkout Bypass */}
