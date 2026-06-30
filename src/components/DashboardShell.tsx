@@ -7,7 +7,7 @@ interface DashboardShellProps {
 }
 
 export default function DashboardShell({ children }: DashboardShellProps) {
-  const { dashboardView, setDashboardView, watchlist, toggleWatchlist, user, openCheckout } = useTrends();
+  const { dashboardView, setDashboardView, watchlist, toggleWatchlist, user } = useTrends();
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
 
   // Helper to resolve trend item mock lookups for watchlist
@@ -119,11 +119,7 @@ export default function DashboardShell({ children }: DashboardShellProps) {
           <div className="bg-neutral-900/40 border border-white/5 rounded-xl p-4 flex items-center space-x-3">
             <div className="relative">
               {user.isAdmin ? (
-                <div 
-                  onClick={() => openCheckout("enterprise")}
-                  className="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.15)] cursor-pointer hover:bg-amber-500/20 transition-all"
-                  title="Open Secure Checkout"
-                >
+                <div className="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl text-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.15)]">
                   <Shield className="w-5 h-5 fill-amber-400/20" />
                 </div>
               ) : user.tier === "enterprise" ? (

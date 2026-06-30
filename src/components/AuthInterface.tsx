@@ -3,30 +3,8 @@ import { useTrends } from "../context/TrendsContext";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
 export default function AuthInterface() {
-  const { login, socialLogin, setActiveTab } = useTrends();
+  const { socialLogin, setActiveTab } = useTrends();
   const [connectingPlatform, setConnectingPlatform] = useState<string | null>(null);
-
-  // Traditional login states (Temporary for Razorpay verification)
-  const [username, setUsernameInput] = useState("");
-  const [password, setPasswordInput] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const handleTraditionalSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-
-    // Slight artificial delay for loading state
-    setTimeout(() => {
-      try {
-        login(username, password);
-      } catch (err: any) {
-        setError(err.message || "Failed to log in.");
-        setSubmitting(false);
-      }
-    }, 800);
-  };
 
   const handleSocialClick = (platform: string) => {
     setConnectingPlatform(platform);
@@ -78,57 +56,9 @@ export default function AuthInterface() {
                 Access Creator Console
               </h2>
               <p className="text-xs text-neutral-400">
-                Sign in using your account credentials or sync via social.
+                Sync your social media account to instantly track trends and generate viral concepts.
               </p>
             </div>
-
-            {/* Traditional Login Form */}
-            <form onSubmit={handleTraditionalSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Username / Email</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsernameInput(e.target.value)}
-                  placeholder="Enter username"
-                  className="w-full bg-neutral-900 border border-white/5 rounded-xl p-3 text-xs text-white placeholder-neutral-700 focus:outline-none focus:border-violet-500/50"
-                  required
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPasswordInput(e.target.value)}
-                  placeholder="Enter password"
-                  className="w-full bg-neutral-900 border border-white/5 rounded-xl p-3 text-xs text-white placeholder-neutral-700 focus:outline-none focus:border-violet-500/50"
-                  required
-                />
-              </div>
-
-              {error && (
-                <div className="text-xs text-rose-500 font-medium">
-                  {error}
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full bg-violet-600 hover:bg-violet-500 disabled:bg-neutral-900 text-white border border-white/5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 transition cursor-pointer"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-violet-400" />
-                    <span>Signing In...</span>
-                  </>
-                ) : (
-                  <span>Sign In</span>
-                )}
-              </button>
-            </form>
 
             <div className="relative flex items-center justify-center my-6">
               <hr className="w-full border-white/5" />

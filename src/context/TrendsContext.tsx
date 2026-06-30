@@ -38,7 +38,6 @@ interface TrendsContextProps {
   processPayment: () => Promise<void>;
   completePaypalPayment: (details: any) => Promise<void>;
   completeRazorpayPayment: (details: any) => Promise<void>;
-  completeCheckPayment: (details: any) => Promise<void>;
   toggleWatchlist: (trend: TrendItem) => void;
   incrementGenerationCount: () => boolean;
   saveIdea: (idea: ViralIdea) => void;
@@ -200,22 +199,6 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const login = (email: string, password?: string, forceTier?: "free" | "pro" | "enterprise"): boolean => {
     const cleanEmail = email.trim().toLowerCase();
     const isAdmin = cleanEmail === "iwanderful@gmail.com";
-    
-    // Temporary verification credentials for Razorpay
-    if (cleanEmail === "testusername" && password === "password123") {
-      const session: UserSession = {
-        email: "testusername",
-        username: "testusername",
-        tier: "pro",
-        isAdmin: false,
-        dailyGenerationsCount: 0,
-        lastGenerationDate: new Date().toDateString()
-      };
-      setUser(session);
-      setActiveTab("dashboard");
-      setDashboardView("cockpit");
-      return true;
-    }
     
     if (isAdmin) {
       const session: UserSession = {
@@ -564,64 +547,6 @@ export const TrendsProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setCheckoutStatus("idle");
   };
 
-  const completeCheckPayment = async (details: any) => {
-    console.log("Check payment authorized by admin:", details);
-    setCheckoutStatus("authorizing");
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setCheckoutStatus("success");
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    const temp = localStorage.getItem("temp_signup_data");
-    if (temp) {
-      const { email, username, password } = JSON.parse(temp);
-      const newUser = {
-        email: email.trim().toLowerCase(),
-        username,
-        password: password || "",
-        tier: checkoutSelectedTier,
-        isAdmin: false
-      };
-      setUsers(prev => {
-        const filtered = prev.filter(u => u.email.toLowerCase() !== email.trim().toLowerCase());
-        return [...filtered, newUser];
-      });
-      login(email, password, checkoutSelectedTier);
-      localStorage.removeItem("temp_signup_data");
-    } else if (user) {
-      // Upgrading existing user
-      const updatedUsers = users.map(u => {
-        if (u.email.toLowerCase() === user.email?.toLowerCase()) {
-          return { ...u, tier: checkoutSelectedTier };
-        }
-        return u;
-      });
-      setUsers(updatedUsers);
-      setUser({
-        ...user,
-        tier: checkoutSelectedTier
-      });
-    } else {
-      // Guest upgrading
-      const guestEmail = "guest_believer@faith.net";
-      const newUser = {
-        email: guestEmail,
-        username: "Kingdom Guest",
-        password: "",
-        tier: checkoutSelectedTier,
-        isAdmin: false
-      };
-      setUsers(prev => {
-        const filtered = prev.filter(u => u.email.toLowerCase() !== guestEmail);
-        return [...filtered, newUser];
-      });
-      login(guestEmail, "", checkoutSelectedTier);
-    }
-    
-    resetPreviewTimer();
-    setIsCheckoutOpen(false);
-    setCheckoutStatus("idle");
-  };
-
   // Watchlist operations
   const toggleWatchlist = (trend: TrendItem) => {
     setWatchlist((prev) => {
@@ -865,23 +790,13 @@ Ensure the JSON is strictly valid, and return nothing else (no markdown wrappers
         model: "gemini-2.5-flash",
         contents: prompt,
         config: {
+          responseMimeType: "application/json",
           tools: [{ googleSearch: {} }]
         }
       });
 
       const text = response.text || "";
-      let cleaned = text.trim();
-      const jsonStart = cleaned.indexOf('[');
-      const jsonEnd = cleaned.lastIndexOf(']');
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
-      } else {
-        const objStart = cleaned.indexOf('{');
-        const objEnd = cleaned.lastIndexOf('}');
-        if (objStart !== -1 && objEnd !== -1) {
-          cleaned = cleaned.substring(objStart, objEnd + 1);
-        }
-      }
+      const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
       const parsed = JSON.parse(cleaned);
 
       if (Array.isArray(parsed) && parsed.length > 0) {
@@ -954,7 +869,6 @@ Ensure the JSON is strictly valid, and return nothing else (no markdown wrappers
         processPayment,
         completePaypalPayment,
         completeRazorpayPayment,
-        completeCheckPayment,
         toggleWatchlist,
         incrementGenerationCount,
         saveIdea,
