@@ -1,5 +1,6 @@
 import { useTrends } from "../context/TrendsContext";
 import { LogOut, Bell, Flame, Shield, Settings } from "lucide-react";
+import SocialShareBar from "./SocialShareBar";
 
 export default function NavBar() {
   const { activeTab, setActiveTab, user, logout, setIsSettingsOpen } = useTrends();
@@ -35,6 +36,8 @@ export default function NavBar() {
                   Go to Console
                 </button>
               )}
+
+              <SocialShareBar className="hidden sm:flex items-center gap-2 mr-1" size="sm" />
 
               <button
                 onClick={() => setIsSettingsOpen(true)}

@@ -1,6 +1,7 @@
 import { useTrends } from "../context/TrendsContext";
 import { TrendingUp, Sparkles, Sliders, ArrowRight, Check } from "lucide-react";
 import TrendingNow from "./TrendingNow";
+import SocialShareBar from "./SocialShareBar";
 
 export default function LandingPage() {
   const { setActiveTab, openCheckout, user } = useTrends();
@@ -22,46 +23,69 @@ export default function LandingPage() {
   return (
     <div className="space-y-16 py-8">
       {/* Hero Header */}
-      <div className="text-center max-w-4xl mx-auto space-y-6">
-        <div className="inline-flex items-center space-x-2 bg-violet-500/10 border border-violet-500/20 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-violet-300">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Next-Gen Faith Culture Cockpit</span>
-        </div>
-        <h1 className="font-heading text-4xl md:text-6xl font-extrabold tracking-tight leading-none text-white">
-          Track the Pulse of <br />
-          <span className="bg-gradient-to-r from-violet-400 via-rose-400 to-amber-300 bg-clip-text text-transparent">
-            Faith Culture & Trends
-          </span>
-        </h1>
-        <p className="text-lg md:text-xl text-neutral-400 font-normal max-w-2xl mx-auto leading-relaxed">
-          The ultimate real-time analytics cockpit and predictive viral idea generator engineered specifically for Christian creators, ministries, and organizations.
-        </p>
-        
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <button
-            onClick={() => handleSelectTier("free")}
-            className="w-full sm:w-auto relative group cursor-pointer"
-          >
-            <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-violet-600 to-rose-600 blur opacity-70 group-hover:opacity-100 transition duration-300"></div>
-            <div className="relative bg-neutral-950 hover:bg-neutral-900 border border-white/10 px-8 py-3.5 rounded-xl text-base font-bold text-white flex items-center justify-center space-x-2 transition duration-300">
-              <span>Explore Dashboard Demo</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </button>
+      <div className="grid md:grid-cols-12 gap-8 items-center max-w-5xl mx-auto">
+        {/* Main Text and Actions */}
+        <div className="md:col-span-8 space-y-6 text-center md:text-left">
+          <div className="inline-flex items-center space-x-2 bg-violet-500/10 border border-violet-500/20 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-violet-300">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Next-Gen Faith Culture Cockpit</span>
+          </div>
+          <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none text-white">
+            Track the Pulse of <br />
+            <span className="bg-gradient-to-r from-violet-400 via-rose-400 to-amber-300 bg-clip-text text-transparent">
+              Faith Culture & Trends
+            </span>
+          </h1>
+          <p className="text-base md:text-lg text-neutral-400 font-normal max-w-2xl leading-relaxed">
+            The ultimate real-time analytics cockpit and predictive viral idea generator engineered specifically for Christian creators, ministries, and organizations.
+          </p>
           
-          <button
-            onClick={() => {
-              if (user) setActiveTab("dashboard");
-              else {
-                localStorage.setItem("selected_signup_tier", "pro");
-                setActiveTab("auth");
-              }
-            }}
-            className="w-full sm:w-auto bg-neutral-900 hover:bg-neutral-800 text-white border border-white/5 px-8 py-3.5 rounded-xl text-base font-bold transition duration-300 cursor-pointer"
-          >
-            Deploy Creator Suite
-          </button>
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 pt-2">
+            <button
+              onClick={() => handleSelectTier("free")}
+              className="w-full sm:w-auto relative group cursor-pointer"
+            >
+              <div className="absolute -inset-0.5 rounded-xl bg-gradient-to-r from-violet-600 to-rose-600 blur opacity-70 group-hover:opacity-100 transition duration-300"></div>
+              <div className="relative bg-neutral-950 hover:bg-neutral-900 border border-white/10 px-8 py-3.5 rounded-xl text-base font-bold text-white flex items-center justify-center space-x-2 transition duration-300">
+                <span>Explore Dashboard Demo</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </button>
+            
+            <button
+              onClick={() => {
+                if (user) setActiveTab("dashboard");
+                else {
+                  localStorage.setItem("selected_signup_tier", "pro");
+                  setActiveTab("auth");
+                }
+              }}
+              className="w-full sm:w-auto bg-neutral-900 hover:bg-neutral-800 text-white border border-white/5 px-8 py-3.5 rounded-xl text-base font-bold transition duration-300 cursor-pointer"
+            >
+              Deploy Creator Suite
+            </button>
+          </div>
+        </div>
+
+        {/* Share Website Card (Mockup matches drawing) */}
+        <div className="md:col-span-4 bg-neutral-950/60 border border-white/5 p-6 rounded-2xl backdrop-blur-sm relative overflow-hidden shadow-2xl flex flex-col justify-between h-full animate-fade-in group hover:border-violet-500/20 transition-all duration-300">
+          <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-violet-500 via-rose-500 to-amber-400"></div>
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <span className="text-[9px] text-violet-400 font-extrabold uppercase tracking-widest">Share Console</span>
+              <h3 className="font-heading text-sm font-bold text-white uppercase tracking-wider">Spread the Pulse</h3>
+              <p className="text-[11px] text-neutral-500 leading-normal">
+                Share Christian Viral Trends with other creators, ministers, and pastors to spread eternal truths.
+              </p>
+            </div>
+            
+            <SocialShareBar className="grid grid-cols-4 gap-2 pt-2" size="md" />
+          </div>
+
+          <div className="text-[9px] text-neutral-600 border-t border-white/5 pt-4 mt-6 text-center">
+            shares link to: <span className="font-semibold text-neutral-500">christianviraltrends.com</span>
+          </div>
         </div>
       </div>
 
