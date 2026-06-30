@@ -2,7 +2,7 @@ import { useTrends } from "../context/TrendsContext";
 import { LogOut, Bell, Flame, Shield, Settings } from "lucide-react";
 
 export default function NavBar() {
-  const { activeTab, setActiveTab, user, logout, setIsSettingsOpen } = useTrends();
+  const { activeTab, setActiveTab, user, logout, setIsSettingsOpen, openCheckout } = useTrends();
 
   return (
     <nav className="sticky top-0 z-40 bg-[#050505]/75 backdrop-blur-md border-b border-white/5 py-4 px-6">
@@ -47,7 +47,11 @@ export default function NavBar() {
               <div className="flex items-center space-x-3 bg-neutral-900/60 border border-white/5 rounded-full pl-3 pr-2 py-1">
                 {/* Badge Icon */}
                 {user.isAdmin ? (
-                  <div className="flex items-center space-x-1.5 text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border border-amber-500/20">
+                  <div 
+                    onClick={() => openCheckout("enterprise")}
+                    className="flex items-center space-x-1.5 text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider border border-amber-500/20 cursor-pointer transition-all"
+                    title="Open Secure Checkout"
+                  >
                     <Shield className="w-3 h-3 fill-amber-400/20" />
                     <span>Kingdom Admin</span>
                   </div>

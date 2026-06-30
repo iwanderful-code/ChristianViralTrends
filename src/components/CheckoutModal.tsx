@@ -16,17 +16,60 @@ export default function CheckoutModal() {
     checkoutStatus, 
     processPayment,
     completePaypalPayment,
-    completeRazorpayPayment
+    completeRazorpayPayment,
+    completeCheckPayment,
+    user
   } = useTrends();
   
   const [sdkReady, setSdkReady] = useState<boolean>(false);
   const [paypalError, setPaypalError] = useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<"paypal" | "razorpay">("paypal");
+  const [paymentMethod, setPaymentMethod] = useState<"paypal" | "razorpay" | "check">("paypal");
   const [razorpayReady, setRazorpayReady] = useState<boolean>(false);
   const [razorpayError, setRazorpayError] = useState<string | null>(null);
   
   const paypalContainerRef = useRef<HTMLDivElement>(null);
   const razorpayContainerRef = useRef<HTMLDivElement>(null);
+
+  // Check payment simulator states
+  const [bankName, setBankName] = useState<string>("Kingdom Trust Bank");
+  const [routingNumber, setRoutingNumber] = useState<string>("");
+  const [accountNumber, setAccountNumber] = useState<string>("");
+  const [checkNumber, setCheckNumber] = useState<string>("1001");
+  const [signee, setSignee] = useState<string>("Kingdom Admin");
+  const [checkError, setCheckError] = useState<string | null>(null);
+  const [isAuthorizingCheck, setIsAuthorizingCheck] = useState<boolean>(false);
+
+  const handleCheckSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!routingNumber || !accountNumber || !checkNumber) {
+      setCheckError("All bank check routing details are required.");
+      return;
+    }
+    if (routingNumber.length < 9) {
+      setCheckError("Routing number must be a 9-digit sequence.");
+      return;
+    }
+    if (accountNumber.length < 5) {
+      setCheckError("Account number must be at least 5 digits.");
+      return;
+    }
+    setCheckError(null);
+    setIsAuthorizingCheck(true);
+    
+    try {
+      await completeCheckPayment({
+        bankName,
+        routingNumber,
+        accountNumber,
+        checkNumber,
+        signee
+      });
+    } catch (err: any) {
+      setCheckError(err.message || "Failed to authorize check payment.");
+    } finally {
+      setIsAuthorizingCheck(false);
+    }
+  };
 
   const getTierPrice = () => {
     return checkoutSelectedTier === "enterprise" ? "99.00" : "29.00";
@@ -231,7 +274,7 @@ export default function CheckoutModal() {
               </div>
  
               {/* Payment Method Selector */}
-              <div className="grid grid-cols-2 gap-3 pb-2">
+              <div className={`grid ${user?.isAdmin ? "grid-cols-3" : "grid-cols-2"} gap-3 pb-2`}>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("paypal")}
@@ -254,6 +297,19 @@ export default function CheckoutModal() {
                 >
                   <span>Razorpay</span>
                 </button>
+                {user?.isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("check")}
+                    className={`flex items-center justify-center space-x-2 py-2 px-3 rounded-xl border text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer ${
+                      paymentMethod === "check"
+                        ? "bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-md shadow-emerald-500/5"
+                        : "bg-neutral-900 border-white/5 text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    <span>Check</span>
+                  </button>
+                )}
               </div>
 
               {/* Gateway Containers */}
@@ -282,7 +338,7 @@ export default function CheckoutModal() {
                       <span>256-bit SSL encrypted connection. Powered by PayPal.</span>
                     </div>
                   </>
-                ) : (
+                ) : paymentMethod === "razorpay" ? (
                   <>
                     <div className={`relative min-h-[100px] z-10 flex justify-center items-center ${razorpayReady ? "" : "hidden"}`}>
                       <div ref={razorpayContainerRef} className="w-full flex justify-center razorpay-btn-wrapper"></div>
@@ -306,6 +362,146 @@ export default function CheckoutModal() {
                       <span>256-bit SSL encrypted connection. Powered by Razorpay.</span>
                     </div>
                   </>
+                ) : (
+                  /* Check Payment Simulator */
+                  <form onSubmit={handleCheckSubmit} className="space-y-4">
+                    {/* Check Mockup Box */}
+                    <div className="relative bg-neutral-900 border border-white/10 rounded-xl p-5 text-neutral-400 font-sans shadow-lg overflow-hidden select-none">
+                      {/* Check Background Watermark Grid */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-neutral-950 via-neutral-900 to-black opacity-60"></div>
+                      <div className="absolute inset-0 opacity-[0.02] bg-[linear-gradient(to_right,#808080_1px,transparent_1px),linear-gradient(to_bottom,#808080_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+
+                      {/* Header */}
+                      <div className="relative flex justify-between items-start border-b border-white/10 pb-2 mb-3">
+                        <div className="text-[10px] font-bold tracking-wider uppercase text-emerald-400">
+                          {bankName || "Kingdom Trust Bank"}
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[8px] text-neutral-500 uppercase tracking-widest">Check No.</div>
+                          <div className="text-[10px] font-mono text-neutral-300 font-bold">{checkNumber || "1001"}</div>
+                        </div>
+                      </div>
+
+                      {/* Payee and Amount Box */}
+                      <div className="relative space-y-2 text-xs">
+                        <div className="flex items-center space-x-2 border-b border-white/5 pb-1">
+                          <span className="text-[9px] text-neutral-500 uppercase tracking-wider shrink-0">Pay to:</span>
+                          <span className="text-neutral-200 font-semibold">Christian Viral Trends Inc.</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between gap-4 border-b border-white/5 pb-1">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-[9px] text-neutral-500 uppercase tracking-wider shrink-0">Sum:</span>
+                            <span className="text-neutral-300 italic">
+                              {checkoutSelectedTier === "enterprise" ? "Ninety-Nine and 00/100" : "Twenty-Nine and 00/100"} Dollars
+                            </span>
+                          </div>
+                          <div className="bg-neutral-950/80 border border-white/10 px-2 py-0.5 rounded text-emerald-400 font-mono font-bold text-xs">
+                            ${getTierPrice()}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* MICR Encoding Line at the bottom (extremely realistic check detail!) */}
+                      <div className="relative mt-6 flex justify-between items-center text-[10px] font-mono text-neutral-500 tracking-[0.2em] border-t border-white/5 pt-2">
+                        <div>
+                          ⑆{routingNumber || "000000000"}⑆
+                        </div>
+                        <div>
+                          {accountNumber || "0000000000"}⑈
+                        </div>
+                        <div>
+                          {checkNumber || "1001"}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Input Controls */}
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] text-neutral-500 uppercase tracking-wider font-semibold">Bank Name</label>
+                        <input
+                          type="text"
+                          value={bankName}
+                          onChange={(e) => setBankName(e.target.value)}
+                          placeholder="e.g. Kingdom Trust Bank"
+                          className="w-full bg-neutral-900 border border-white/5 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50"
+                          required
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-neutral-500 uppercase tracking-wider font-semibold">Routing Number</label>
+                          <input
+                            type="text"
+                            value={routingNumber}
+                            onChange={(e) => setRoutingNumber(e.target.value.replace(/\D/g, "").substring(0, 9))}
+                            placeholder="9 digits"
+                            className="w-full bg-neutral-900 border border-white/5 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 font-mono"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-neutral-500 uppercase tracking-wider font-semibold">Account Number</label>
+                          <input
+                            type="text"
+                            value={accountNumber}
+                            onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, "").substring(0, 15))}
+                            placeholder="5-15 digits"
+                            className="w-full bg-neutral-900 border border-white/5 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 font-mono"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-neutral-500 uppercase tracking-wider font-semibold">Check Number</label>
+                          <input
+                            type="text"
+                            value={checkNumber}
+                            onChange={(e) => setCheckNumber(e.target.value.replace(/\D/g, "").substring(0, 6))}
+                            placeholder="e.g. 1001"
+                            className="w-full bg-neutral-900 border border-white/5 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 font-mono"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] text-neutral-500 uppercase tracking-wider font-semibold">Authorized Signee</label>
+                          <input
+                            type="text"
+                            value={signee}
+                            onChange={(e) => setSignee(e.target.value)}
+                            placeholder="e.g. Kingdom Admin"
+                            className="w-full bg-neutral-900 border border-white/5 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-emerald-500/50 font-sans"
+                            required
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {checkError && (
+                      <div className="bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs px-3.5 py-2.5 rounded-lg text-center animate-pulse">
+                        {checkError}
+                      </div>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isAuthorizingCheck}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-neutral-900 text-white border border-white/5 disabled:border-white/2 py-3 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center space-x-2 transition cursor-pointer disabled:text-neutral-600 disabled:cursor-not-allowed font-heading"
+                    >
+                      {isAuthorizingCheck ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin text-emerald-400" />
+                          <span>Authorizing Check...</span>
+                        </>
+                      ) : (
+                        <span>Authorize Check Payment</span>
+                      )}
+                    </button>
+                  </form>
                 )}
               </div>
 
